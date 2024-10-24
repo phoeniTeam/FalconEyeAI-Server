@@ -1,5 +1,5 @@
 import express from 'express';
-import {  getAllCreators, getCreatorById } from '../controllers/creatorController.js';
+import {  getAllCreators, getCreatorById, updateCreator } from '../controllers/creatorController.js';
 
 
 const router =express.Router();
@@ -8,5 +8,6 @@ const router =express.Router();
 // router.get('/', loginCreator )
 router.get('/', getAllCreators)
 router.get('/:id', getCreatorById)
+router.put('/:id', updateCreator)
 
 export default router;

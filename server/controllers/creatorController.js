@@ -1,6 +1,5 @@
-import Creator from '../models/creatorSchema.js';
-import { body, validationResult } from 'express-validator';
-
+import Creator from "../models/creatorSchema.js";
+import { body, validationResult } from "express-validator";
 
 //
 // const validatorRules = [
@@ -15,7 +14,7 @@ import { body, validationResult } from 'express-validator';
 
 // ]
 // // sign-up new creator account
-// export const createCreator = 
+// export const createCreator =
 // [
 //     ...validatorRules,
 // async (req, res) => {
@@ -37,11 +36,8 @@ import { body, validationResult } from 'express-validator';
 //         console.error(error.message);
 //         res.status(500).send('Server Error');
 //     }
-   
 
-   
 // }
-
 
 // ]
 
@@ -52,12 +48,11 @@ import { body, validationResult } from 'express-validator';
 //             { email: req.body.email,
 //                 password: req.body.password
 
-
 //              });
 //              if(!loginCreatorAccount){
 //                  return res.status(400).json({msg: 'Invalid email address'});
 //              }
-             
+
 //              if(req.body.password !== loginCreatorAccount.password){
 //                  return res.status(400).json({msg: "invalid password"});
 //              }
@@ -70,39 +65,55 @@ import { body, validationResult } from 'express-validator';
 
 // }
 
-
 //get all creators data
 
 export const getAllCreators = async (req, res) => {
-
-    try {
-        const creators = await Creator.find();
-        res.send(creators);
-        if(creators.length === 0){
-            return res.status(404).json({msg: 'No creators found'});
-        }
-        res.status(200).send(creators);
-    } catch (error) {
-        console.error(error.message);
-        res.status(500).send('Server Error');
+  try {
+    const creators = await Creator.find();
+    res.send(creators);
+    if (creators.length === 0) {
+      return res.status(404).json({ msg: "No creators found" });
     }
-
-
-}
+    res.status(200).send(creators);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send("Server Error");
+  }
+};
 
 //get creator  by id
 export const getCreatorById = async (req, res) => {
-    const id = req.params.id;
-    try{
-        const creator = await Creator.findById(id);
-        if(!creator){
-            return res.status(404).json({msg: 'Creator not found'});
-        }
-        res.send(creator);
-
-    }catch (error) {
-        console.error(error.message);
-        res.status(500).send('Server Error');
+  const id = req.params.id;
+  try {
+    const creator = await Creator.findById(id);
+    if (!creator) {
+      return res.status(404).json({ msg: "Creator not found" });
     }
+    res.send(creator);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send("Server Error");
+  }
+};
 
-}
+// update creator  by id
+export const updateCreator = async (req, res) => {
+  const id = req.params.id;
+  try{
+    const updatedCreator = req.body;
+    const updatedCreatorAccount = await Creator.findByIdAndUpdate(
+      id,
+      updatedCreator,
+      { new: true }
+    );
+    if (!updatedCreatorAccount) {
+      return res.status(404).json({ msg: "Creator not found" });
+    }
+    res.status(200).send(updatedCreatorAccount);;
+
+  }catch (error) {
+    console.error(error.message);
+    res.status(500).send("Server Error");
+  }
+ 
+};
