@@ -38,3 +38,28 @@ export const createCreator = [
     }
   },
 ];
+
+// log in creator account
+export const loginCreator = async (req, res) => {
+    try{
+        const loginCreatorAccount = await Creator.findOne(
+            { email: req.body.email,
+                password: req.body.password
+
+
+             });
+             if(!loginCreatorAccount){
+                 return res.status(400).json({msg: 'Invalid email address'});
+             }
+             
+             if(req.body.password !== loginCreatorAccount.password){
+                 return res.status(400).json({msg: "invalid password"});
+             }
+             res.status(200).json({msg: 'Logged in successfully' ,creator: loginCreatorAccount});
+
+    }catch (error) {
+        console.error(error.message);
+        res.status(500).send('Server Error');
+    }
+
+}
