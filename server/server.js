@@ -13,6 +13,8 @@ app.use(cors());
 
 connectDB();
 app.use("/register",creatorRoutes);
+app.use("/login",creatorRoutes);
+
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
