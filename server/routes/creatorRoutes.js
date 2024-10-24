@@ -1,10 +1,11 @@
 import express from 'express';
-import { createCreator, loginCreator } from '../controllers/creatorController.js';
+import {  getAllCreators } from '../controllers/creatorController.js';
 
 
 const router =express.Router();
 
-router.post('/',createCreator)
-router.get('/', loginCreator )
+// router.post('/',createCreator)
+// router.get('/', loginCreator )
+router.get('/', getAllCreators)
 
 export default router;
