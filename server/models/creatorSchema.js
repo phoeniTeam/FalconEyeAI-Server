@@ -23,6 +23,15 @@ const creatorSchema = new Schema({
         required:true,
         trim:true,
     },
+    photo:{
+        type:String,
+        trim:true,
+    },
+    planId:{
+        type:Number,
+        default:1,
+        trim:true,
+    },
     creditBalance:{
         type:Number,
         default:10,
