@@ -72,6 +72,7 @@ import { body, validationResult } from 'express-validator';
 
 
 //get all creators data
+
 export const getAllCreators = async (req, res) => {
 
     try {
@@ -86,5 +87,22 @@ export const getAllCreators = async (req, res) => {
         res.status(500).send('Server Error');
     }
 
+
+}
+
+//get creator  by id
+export const getCreatorById = async (req, res) => {
+    const id = req.params.id;
+    try{
+        const creator = await Creator.findById(id);
+        if(!creator){
+            return res.status(404).json({msg: 'Creator not found'});
+        }
+        res.send(creator);
+
+    }catch (error) {
+        console.error(error.message);
+        res.status(500).send('Server Error');
+    }
 
 }
