@@ -117,3 +117,21 @@ export const updateCreator = async (req, res) => {
   }
  
 };
+
+
+// delete creator by id
+export const deleteCreatorById = async (req, res) => {
+    const id = req.params.id;
+    try{
+        const deletedCreator = await Creator.findByIdAndDelete(id);
+        if (!deletedCreator) {
+            return res.status(404).json({ msg: "Creator not found" });
+        }
+        res.status(200).send(deletedCreator);;
+
+
+    }catch (error) {
+        console.error(error.message);
+        res.status(500).send('Server Error');
+    }
+}
