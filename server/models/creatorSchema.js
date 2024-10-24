@@ -33,6 +33,11 @@ const creatorSchema = new Schema({
         default:1,
         trim:true,
     },
+    Images:[
+        {
+            type:mongoose.Schema.Types.ObjectId, ref:'Image'
+        }
+    ],
     creditBalance:{
         type:Number,
         default:10,
