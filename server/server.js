@@ -13,9 +13,10 @@ app.use(express.json());
 app.use(cors());
 
 connectDB();
-// app.use("/register",creatorRoutes);
+
 app.use("/api/auth", authRoutes);
 app.use("/creators", creatorRoutes);
+app.use("/transactions", transactionRoutes);
 
 
 app.listen(port, () => {
