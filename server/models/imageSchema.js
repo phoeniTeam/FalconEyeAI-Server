@@ -12,6 +12,7 @@ const imageSchema = new Schema({
   aspectRatio: { type: String },
   color: { type: String },
   prompt: { type: String },
+  objectName: { type: String }, // New added field
   creatorId: { type: Schema.Types.ObjectId, ref: "Creator" },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },

@@ -1,28 +1,56 @@
-import mongoose from 'mongoose';
-import Creator from '../models/creatorSchema.js';
-import Image from '../models/imageSchema.js';
+import mongoose from "mongoose";
+import Creator from "../models/creatorSchema.js";
+import Image from "../models/imageSchema.js";
 
 // Create an image (Post)
 export const createImage = async (req, res) => {
-  const { title, transformationType, publicId, secureURL, width, height, config, transformationUrl, aspectRatio, color, prompt, creatorId } = req.body;
+  const {
+    title,
+    transformationType,
+    publicId,
+    secureURL,
+    width,
+    height,
+    config,
+    transformationUrl,
+    aspectRatio,
+    color,
+    prompt,
+    objectName, 
+    creatorId,
+  } = req.body;
 
   try {
     const image = new Image({
-      title, transformationType, publicId, secureURL, width, height, config,
-      transformationUrl, aspectRatio, color, prompt, creatorId
+      title,
+      transformationType,
+      publicId,
+      secureURL,
+      width,
+      height,
+      config,
+      transformationUrl,
+      aspectRatio,
+      color,
+      prompt,
+      objectName, 
+      creatorId,
     });
     await image.save();
 
-    await Creator.findByIdAndUpdate(creatorId, { $push: { images: image._id } }, { new: true });
+    await Creator.findByIdAndUpdate(
+      creatorId,
+      { $push: { images: image._id } },
+      { new: true }
+    );
 
-    res.status(201).json({ message: 'Image created successfully', image });
+    res.status(201).json({ message: "Image created successfully", image });
   } catch (error) {
-    res.status(500).json({ message: 'Server error: Unable to create image' });
+    res.status(500).json({ message: "Server error: Unable to create image" });
   }
 };
 
 // Get all images with pagination
-
 export const getAllImages = async (req, res) => {
   const { limit = 20, page = 1 } = req.query;
   const options = {
@@ -31,8 +59,10 @@ export const getAllImages = async (req, res) => {
   };
 
   try {
-    const images = await Image.find({}, null, options)
-      .populate('creatorId', 'name photo');
+    const images = await Image.find({}, null, options).populate(
+      "creatorId",
+      "name photo"
+    );
 
     const totalImages = await Image.countDocuments();
 
@@ -43,39 +73,64 @@ export const getAllImages = async (req, res) => {
       images,
     });
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: "Server error" });
   }
-}; 
-
+};
 
 // Get image by ID
 export const getImageById = async (req, res) => {
   try {
     const image = await Image.findById(req.params.id);
-    if (!image) return res.status(404).json({ message: 'Image not found' });
+    if (!image) return res.status(404).json({ message: "Image not found" });
 
     res.status(200).json(image);
   } catch (error) {
-    res.status(500).json({ message: 'Server error: Unable to retrieve image' });
+    res.status(500).json({ message: "Server error: Unable to retrieve image" });
   }
 };
 
 // Update an image
 export const updateImage = async (req, res) => {
-  const { title, transformationType, publicId, secureURL, width, height, config, transformationUrl, aspectRatio, color, prompt } = req.body;
+  const {
+    title,
+    transformationType,
+    publicId,
+    secureURL,
+    width,
+    height,
+    config,
+    transformationUrl,
+    aspectRatio,
+    color,
+    prompt,
+    objectName, 
+  } = req.body;
 
   try {
     const image = await Image.findByIdAndUpdate(
       req.params.id,
-      { title, transformationType, publicId, secureURL, width, height, config, transformationUrl, aspectRatio, color, prompt },
+      {
+        title,
+        transformationType,
+        publicId,
+        secureURL,
+        width,
+        height,
+        config,
+        transformationUrl,
+        aspectRatio,
+        color,
+        prompt,
+        objectName, 
+      },
       { new: true, runValidators: true }
     );
 
-    if (!image) return res.status(404).json({ message: 'Image not found' });
+    if (!image) return res.status(404).json({ message: "Image not found" });
 
-    res.status(200).json({ message: 'Image updated successfully', image });
+    res.status(200).json({ message: "Image updated successfully", image });
   } catch (error) {
-    res.status(500).json({ message: 'Server error: Unable to update image' });
+    res.status(500).json({ message: "Server error: Unable to update image" });
   }
 };
 
@@ -84,12 +139,18 @@ export const patchImage = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const updatedImage = await Image.findByIdAndUpdate(id, req.body, { new: true, runValidators: true });
-    if (!updatedImage) return res.status(404).json({ message: 'Image not found' });
+    const updatedImage = await Image.findByIdAndUpdate(id, req.body, {
+      new: true,
+      runValidators: true,
+    });
+    if (!updatedImage)
+      return res.status(404).json({ message: "Image not found" });
 
-    res.status(200).json({ message: 'Image updated successfully', image: updatedImage });
+    res
+      .status(200)
+      .json({ message: "Image updated successfully", image: updatedImage });
   } catch (error) {
-    res.status(500).json({ message: 'Server error: Unable to patch image' });
+    res.status(500).json({ message: "Server error: Unable to patch image" });
   }
 };
 
@@ -98,17 +159,17 @@ export const deleteImage = async (req, res) => {
   const { id } = req.params;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(400).json({ message: 'Invalid image ID' });
+    return res.status(400).json({ message: "Invalid image ID" });
   }
 
   try {
     const image = await Image.findByIdAndDelete(id);
-    if (!image) return res.status(404).json({ message: 'Image not found' });
+    if (!image) return res.status(404).json({ message: "Image not found" });
 
     await Creator.updateMany({ images: id }, { $pull: { images: id } });
 
-    res.status(200).json({ message: 'Image deleted successfully' });
+    res.status(200).json({ message: "Image deleted successfully" });
   } catch (error) {
-    res.status(500).json({ message: 'Server error: Unable to delete image' });
+    res.status(500).json({ message: "Server error: Unable to delete image" });
   }
 };
