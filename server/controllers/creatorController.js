@@ -70,16 +70,18 @@ import { body, validationResult } from "express-validator";
 export const getAllCreators = async (req, res) => {
   try {
     const creators = await Creator.find();
-    res.send(creators);
+
     if (creators.length === 0) {
       return res.status(404).json({ msg: "No creators found" });
     }
-    res.status(200).send(creators);
+
+    return res.status(200).json(creators);
   } catch (error) {
     console.error(error.message);
-    res.status(500).send("Server Error");
+    return res.status(500).send("Server Error");
   }
 };
+
 
 //get creator  by id
 export const getCreatorById = async (req, res) => {

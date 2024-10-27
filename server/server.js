@@ -21,8 +21,6 @@ app.use("/creators", creatorRoutes);
 app.use("/images", imageRoutes);
 app.use("/transactions", transactionRoutes);
 
-
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
-
