@@ -10,90 +10,96 @@ export const getAllCreators = async (req, res) => {
     }
     return res.status(200).json(creators);
   } catch (error) {
-    res.status(500).send({ message: error.message });
+    console.error(error.message);
+    return res.status(500).send("Server Error");
   }
 };
 
-// Get creator by ID  
+// Get a creator by ID
 export const getCreatorById = async (req, res) => {
-  const { id } = req.params;
+  const id = req.params.id;
   try {
     const creator = await Creator.findById(id).populate('images').populate('transactions');
     if (!creator) {
-      return res.status(404).send({ message: "Creator not found" });
+      return res.status(404).json({ msg: "Creator not found" });
     }
     res.json(creator);
   } catch (error) {
-    res.status(500).send({ message: error.message });
+    console.error(error.message);
+    res.status(500).send("Server Error");
   }
 };
 
-// Create a new creator  
+// Create a new creator
 export const createCreator = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const { name, email, password, role, numberOfIdeas, ideas } = req.body;
-
   try {
-    const newCreator = new Creator({ name, email, password, role, numberOfIdeas, ideas });
+    const { name, username, email, password, photo, planId, images, transactions, creditBalance } = req.body;
+    const newCreator = new Creator({
+      name,
+      username,
+      email,
+      password,
+      photo,
+      planId,
+      images,
+      transactions,
+      creditBalance
+    });
+
     await newCreator.save();
-    res.status(201).send(newCreator);
+    res.status(201).json(newCreator);
   } catch (error) {
-    res.status(500).send({ message: error.message });
+    console.error(error.message);
+    res.status(500).send("Server Error");
   }
 };
 
-// Update creator by ID  
+// Update creator by ID
 export const updateCreator = async (req, res) => {
-  const { id } = req.params;
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
+  const id = req.params.id;
   try {
     const updatedCreator = await Creator.findByIdAndUpdate(id, req.body, { new: true });
     if (!updatedCreator) {
-      return res.status(404).send({ message: "Creator not found" });
+      return res.status(404).json({ msg: "Creator not found" });
     }
-    res.status(200).send(updatedCreator);
+    res.status(200).json(updatedCreator);
   } catch (error) {
-    res.status(500).send({ message: error.message });
+    console.error(error.message);
+    res.status(500).send("Server Error");
   }
 };
 
-// Patch (partially update) creator by ID  
+// Partially update creator by ID
 export const patchCreator = async (req, res) => {
-  const { id } = req.params;
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
+  const id = req.params.id;
   try {
-    const updatedCreator = await Creator.findByIdAndUpdate(id, req.body, { new: true, runValidators: true });
-    if (!updatedCreator) {
-      return res.status(404).send({ message: "Creator not found" });
+    const patchedCreator = await Creator.findByIdAndUpdate(id, req.body, { new: true });
+    if (!patchedCreator) {
+      return res.status(404).json({ msg: "Creator not found" });
     }
-    res.status(200).send(updatedCreator);
+    res.status(200).json(patchedCreator);
   } catch (error) {
-    res.status(500).send({ message: error.message });
+    console.error(error.message);
+    res.status(500).send("Server Error");
   }
 };
 
-// Delete creator by ID  
+// Delete creator by ID
 export const deleteCreatorById = async (req, res) => {
-  const { id } = req.params;
+  const id = req.params.id;
   try {
     const deletedCreator = await Creator.findByIdAndDelete(id);
     if (!deletedCreator) {
-      return res.status(404).send({ message: "Creator not found" });
+      return res.status(404).json({ msg: "Creator not found" });
     }
-    res.status(200).send({ message: "Creator deleted successfully" });
+    res.status(200).json({ msg: "Creator deleted successfully", deletedCreator });
   } catch (error) {
-    res.status(500).send({ message: error.message });
+    console.error(error.message);
+    res.status(500).send("Server Error");
   }
 };
