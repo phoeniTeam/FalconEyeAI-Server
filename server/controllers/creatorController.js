@@ -1,15 +1,14 @@
-import Creator from '../models/creatorSchema.js';
-import { validationResult } from 'express-validator';
+import Creator from "../models/creatorSchema.js";
+import { validationResult } from "express-validator";
 
-// Get all creators  
+// Get all creators
 export const getAllCreators = async (req, res) => {
   try {
-    const creators = await Creator.find();
-
-    if (!creators.length) {
-      return res.status(404).json({ message: "Creators not found" });
+    const creators = await Creator.find().populate('images').populate('transactions');
+    if (creators.length === 0) {
+      return res.status(404).json({ msg: "No creators found" });
     }
-    res.status(200).send(creators);
+    return res.status(200).json(creators);
   } catch (error) {
     res.status(500).send({ message: error.message });
   }
@@ -19,11 +18,11 @@ export const getAllCreators = async (req, res) => {
 export const getCreatorById = async (req, res) => {
   const { id } = req.params;
   try {
-    const creator = await Creator.findById(id);
+    const creator = await Creator.findById(id).populate('images').populate('transactions');
     if (!creator) {
       return res.status(404).send({ message: "Creator not found" });
     }
-    res.status(200).send(creator);
+    res.json(creator);
   } catch (error) {
     res.status(500).send({ message: error.message });
   }
@@ -86,7 +85,7 @@ export const patchCreator = async (req, res) => {
 };
 
 // Delete creator by ID  
-export const deleteCreator = async (req, res) => {
+export const deleteCreatorById = async (req, res) => {
   const { id } = req.params;
   try {
     const deletedCreator = await Creator.findByIdAndDelete(id);
