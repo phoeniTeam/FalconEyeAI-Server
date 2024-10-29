@@ -16,7 +16,7 @@ export const createImage = async (req, res) => {
     aspectRatio,
     color,
     prompt,
-    objectName, 
+    objectName,
     creatorId,
   } = req.body;
 
@@ -33,7 +33,7 @@ export const createImage = async (req, res) => {
       aspectRatio,
       color,
       prompt,
-      objectName, 
+      objectName,
       creatorId,
     });
     await image.save();
@@ -80,7 +80,10 @@ export const getAllImages = async (req, res) => {
 // Get image by ID
 export const getImageById = async (req, res) => {
   try {
-    const image = await Image.findById(req.params.id);
+    const image = await Image.findById(req.params.id).populate(
+      "creatorId",
+      "name photo"
+    );
     if (!image) return res.status(404).json({ message: "Image not found" });
 
     res.status(200).json(image);
@@ -103,7 +106,7 @@ export const updateImage = async (req, res) => {
     aspectRatio,
     color,
     prompt,
-    objectName, 
+    objectName,
   } = req.body;
 
   try {
@@ -121,7 +124,7 @@ export const updateImage = async (req, res) => {
         aspectRatio,
         color,
         prompt,
-        objectName, 
+        objectName,
       },
       { new: true, runValidators: true }
     );

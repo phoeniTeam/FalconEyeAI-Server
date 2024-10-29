@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.post("/", authMiddleware, imageValidationRules(), createImage);
 router.get("/", getAllImages);
-router.get("/:id", authMiddleware, getImageById);
+router.get("/:id", getImageById);
 router.put("/:id", authMiddleware, imageValidationRules(), updateImage);
 router.patch("/:id", authMiddleware, imageValidationRules(), patchImage);
 router.delete("/:id", authMiddleware, deleteImage);
