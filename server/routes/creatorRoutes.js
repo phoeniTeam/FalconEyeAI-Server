@@ -1,5 +1,5 @@
 import express from 'express';
-import creatorValidator from '../Validators/creatorValidator.js';
+import creatorValidator from '../validators/creatorValidator.js';
 import { authMiddleware } from "../middlewares/authMiddleware.js";
 import { createCreator, deleteCreatorById, getAllCreators, getCreatorById, patchCreator, updateCreator } from '../controllers/creatorController.js';
 
