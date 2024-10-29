@@ -16,6 +16,7 @@ import { createTransaction } from "./controllers/transactionController.js";
 const app = express();
 const port = process.env.PORT || 8000;
 app.use(express.json());
+app.use(bodyParser.json());
 app.use(cors());
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
@@ -33,7 +34,7 @@ const checkoutSession = async (req, res) => {
       1: { id: 1, price: 0, name: "Free", credits: "10" },
       2: { id: 2, price: 29, name: "Pro", credits: "220" },
       3: { id: 3, price: 79, name: "Premium", credits: "510" },
-    }
+    };
     const amount = Number(plansDetails[plan].price) * 100;
     const session = await stripe.checkout.sessions.create({
       line_items: [
@@ -42,21 +43,21 @@ const checkoutSession = async (req, res) => {
             currency: 'usd',
             product_data: {
               name: plansDetails[plan].name,
-              description: `Credits ${plansDetails[plan].credits}`
+              description: `Credits ${plansDetails[plan].credits}`,
             },
-            unit_amount: amount
+            unit_amount: amount,
           },
-          quantity: 1
-        }
+          quantity: 1,
+        },
       ],
       metadata: {
         creatorId: req.body.creatorId,
         credits: plansDetails[plan].credits,
-        plan: plansDetails[plan].id
+        plan: plansDetails[plan].id,
       },
       mode: 'payment',
-      success_url: `${process.env.CLIENT_URL}profile`,
-      cancel_url: `${process.env.CLIENT_URL}`,
+      success_url: `${process.env.CLIENT_URL}/profile`,
+      cancel_url: `${process.env.CLIENT_URL}/`,
     });
 
     res.json({ id: session.id });
@@ -65,7 +66,8 @@ const checkoutSession = async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
-app.use("/create-checkout-session", checkoutSession);
+
+app.post("/create-checkout-session", checkoutSession);
 
 app.post('/stripe', (req, res) => {
   const event = req.body;
@@ -93,10 +95,8 @@ const linkStripeWebhook = async (req, res) => {
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
-
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
-
 
     const creatorId = session.metadata.creatorId;
     const credits = session.metadata.credits;
@@ -105,21 +105,19 @@ const linkStripeWebhook = async (req, res) => {
     const amount = session.amount_total;
 
     try {
-
       await createTransaction(stripeId, amount, plan, credits, creatorId);
-
-
       res.status(200).send('Success');
     } catch (error) {
       console.error('Error creating transaction:', error);
       res.status(500).send('Internal Server Error');
     }
   } else {
-
     res.status(200).send('Received unhandled event');
   }
-}
+};
+
 app.post('/stripe', bodyParser.raw({ type: 'application/json' }), linkStripeWebhook);
+
 
 
 app.listen(port, () => {
