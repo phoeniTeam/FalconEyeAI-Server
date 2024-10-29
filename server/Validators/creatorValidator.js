@@ -1,6 +1,6 @@
 import { body } from 'express-validator';
 
-export const creatorValidationRules = () => {
+export const creatorValidator = () => {
     return [
         body('email').isEmail().withMessage('Please provide a valid email'),
         body('username').isLength({ min: 3 }).withMessage('Username must be at least 3 characters long'),
