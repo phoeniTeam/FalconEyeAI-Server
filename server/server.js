@@ -69,22 +69,22 @@ const checkoutSession = async (req, res) => {
 
 app.post("/create-checkout-session", checkoutSession);
 
-app.post('/stripe', (req, res) => {
-  const event = req.body;
+// app.post('/stripe', (req, res) => {
+//   const event = req.body;
 
-  switch (event.type) {
-    case 'payment_intent.succeeded':
-      console.log('PaymentIntent was successful!');
-      break;
-    case 'payment_intent.failed':
-      console.log('PaymentIntent failed.');
-      break;
-    default:
-      console.log(`Unhandled event type ${event.type}`);
-  }
+//   switch (event.type) {
+//     case 'payment_intent.succeeded':
+//       console.log('PaymentIntent was successful!');
+//       break;
+//     case 'payment_intent.failed':
+//       console.log('PaymentIntent failed.');
+//       break;
+//     default:
+//       console.log(`Unhandled event type ${event.type}`);
+//   }
 
-  res.status(200).json({ received: true });
-});
+//   res.status(200).json({ received: true });
+// });
 
 const linkStripeWebhook = async (req, res) => {
   let event;
