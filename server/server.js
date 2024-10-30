@@ -34,8 +34,6 @@ const checkoutSession = async (req, res) => {
       2: { id: 2, price: 29, name: "Pro", credits: "220" },
       3: { id: 3, price: 79, name: "Premium", credits: "510" },
     };
-    };
-    };
     const amount = Number(plansDetails[plan].price) * 100;
     const session = await stripe.checkout.sessions.create({
       line_items: [
@@ -45,25 +43,15 @@ const checkoutSession = async (req, res) => {
             product_data: {
               name: plansDetails[plan].name,
               description: `Credits ${plansDetails[plan].credits}`,
-              description: `Credits ${plansDetails[plan].credits}`,
-              description: `Credits ${plansDetails[plan].credits}`,
             },
             unit_amount: amount,
-            unit_amount: amount,
-            unit_amount: amount,
           },
-          quantity: 1,
-        },
-          quantity: 1,
-        },
           quantity: 1,
         },
       ],
       metadata: {
         creatorId: req.body.creatorId,
         credits: plansDetails[plan].credits,
-        plan: plansDetails[plan].id,
-        plan: plansDetails[plan].id,
         plan: plansDetails[plan].id,
       },
       mode: 'payment',
