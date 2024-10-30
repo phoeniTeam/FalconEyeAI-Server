@@ -12,19 +12,12 @@ import Stripe from 'stripe';
 import bodyParser from 'body-parser';
 import { createTransaction } from "./controllers/transactionController.js";
 
+
 const app = express();
 const port = process.env.PORT || 8000;
-
 app.use(express.json());
 app.use(cors());
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-
-// Check for required environment variables
-if (!process.env.STRIPE_SECRET_KEY || !process.env.STRIPE_WEBHOOK_SECRET || !process.env.CLIENT_URL) {
-  console.error('Missing required environment variables');
-  process.exit(1);
-}
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
 connectDB();
 
@@ -68,45 +61,63 @@ const checkoutSession = async (req, res) => {
 
     res.json({ id: session.id });
   } catch (error) {
-    console.error('Error creating checkout session:', error);
+    console.log(error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
 
 app.post("/create-checkout-session", checkoutSession);
 
-app.post('/stripe-webhook', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
+// app.post('/stripe', (req, res) => {
+//   const event = req.body;
+
+//   switch (event.type) {
+//     case 'payment_intent.succeeded':
+//       console.log('PaymentIntent was successful!');
+//       break;
+//     case 'payment_intent.failed':
+//       console.log('PaymentIntent failed.');
+//       break;
+//     default:
+//       console.log(`Unhandled event type ${event.type}`);
+//   }
+
+//   res.status(200).json({ received: true });
+// });
+
+const linkStripeWebhook = async (req, res) => {
   let event;
-  console.log('Stripe webhook');
   try {
     event = stripe.webhooks.constructEvent(req.body, req.headers['stripe-signature'], process.env.STRIPE_WEBHOOK_SECRET);
-    console.log(event);
-
-    // Handle the checkout.session.completed event
-    if (event.type === 'checkout.session.completed') {
-      const session = event.data.object;
-
-      const creatorId = session.metadata.creatorId;
-      const credits = session.metadata.credits;
-      const plan = session.metadata.plan;
-      const stripeId = session.id;
-      const amount = session.amount_total;
-
-      try {
-        await createTransaction(stripeId, amount, plan, credits, creatorId);
-        res.status(200).send('Success');
-      } catch (error) {
-        console.error('Error creating transaction:', error);
-        res.status(500).send('Internal Server Error');
-      }
-    } else {
-      res.status(200).send('Unhandled event type');
-    }
   } catch (err) {
     console.error(`⚠️  Webhook signature verification failed.`, err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
-});
+
+  if (event.type === 'payment_intent.succeeded') {
+    const session = event.data.object;
+
+    const creatorId = session.metadata.creatorId;
+    const credits = session.metadata.credits;
+    const plan = session.metadata.plan;
+    const stripeId = session.id;
+    const amount = session.amount_total;
+
+    try {
+      await createTransaction(stripeId, amount, plan, credits, creatorId);
+      res.status(200).send('Success');
+    } catch (error) {
+      console.error('Error creating transaction:', error);
+      res.status(500).send('Internal Server Error');
+    }
+  } else {
+    res.status(200).send('Received unhandled event');
+  }
+};
+
+app.post('/stripe', bodyParser.raw({ type: 'application/json' }), linkStripeWebhook);
+
+
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
