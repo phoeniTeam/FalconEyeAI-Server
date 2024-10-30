@@ -1,32 +1,44 @@
 import dotenv from "dotenv";
-dotenv.config();
-
 import express from "express";
 import cors from "cors";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";  // Import necessary modules
 import connectDB from "./config/database.js";
 import creatorRoutes from "./routes/creatorRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import imageRoutes from "./routes/imageRoutes.js";
 import transactionRoutes from "./routes/transactionRoutes.js";
-import Stripe from 'stripe';
-import bodyParser from 'body-parser';
+import Stripe from "stripe";
+import bodyParser from "body-parser";
 import { createTransaction } from "./controllers/transactionController.js";
 
+// Define __filename and __dirname for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
+dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
+
+
 app.use(express.json());
 app.use(cors());
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
+app.use(bodyParser.raw({ type: "application/json" }));
+
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
 
 connectDB();
 
+// API routes
 app.use("/api/auth", authRoutes);
 app.use("/creators", creatorRoutes);
 app.use("/images", imageRoutes);
 app.use("/transactions", transactionRoutes);
 
-const checkoutSession = async (req, res) => {
+
+app.post("/create-checkout-session", async (req, res) => {
   try {
     const plan = req.body.plan;
     const plansDetails = {
@@ -39,7 +51,7 @@ const checkoutSession = async (req, res) => {
       line_items: [
         {
           price_data: {
-            currency: 'usd',
+            currency: "usd",
             product_data: {
               name: plansDetails[plan].name,
               description: `Credits ${plansDetails[plan].credits}`,
@@ -54,7 +66,7 @@ const checkoutSession = async (req, res) => {
         credits: plansDetails[plan].credits,
         plan: plansDetails[plan].id,
       },
-      mode: 'payment',
+      mode: "payment",
       success_url: `${process.env.CLIENT_URL}profile`,
       cancel_url: `${process.env.CLIENT_URL}credit`,
     });
@@ -62,39 +74,25 @@ const checkoutSession = async (req, res) => {
     res.json({ id: session.id });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ error: "Internal Server Error" });
   }
-};
+});
 
-app.post("/create-checkout-session", checkoutSession);
 
-// app.post('/stripe', (req, res) => {
-//   const event = req.body;
-
-//   switch (event.type) {
-//     case 'payment_intent.succeeded':
-//       console.log('PaymentIntent was successful!');
-//       break;
-//     case 'payment_intent.failed':
-//       console.log('PaymentIntent failed.');
-//       break;
-//     default:
-//       console.log(`Unhandled event type ${event.type}`);
-//   }
-
-//   res.status(200).json({ received: true });
-// });
-
-const linkStripeWebhook = async (req, res) => {
+app.post("/stripe", async (req, res) => {
   let event;
   try {
-    event = stripe.webhooks.constructEvent(req.body, req.headers['stripe-signature'], process.env.STRIPE_WEBHOOK_SECRET);
+    event = stripe.webhooks.constructEvent(
+      req.body,
+      req.headers["stripe-signature"],
+      process.env.STRIPE_WEBHOOK_SECRET
+    );
   } catch (err) {
     console.error(`⚠️  Webhook signature verification failed.`, err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
-  if (event.type === 'payment_intent.succeeded') {
+  if (event.type === "payment_intent.succeeded") {
     const session = event.data.object;
 
     const creatorId = session.metadata.creatorId;
@@ -105,20 +103,25 @@ const linkStripeWebhook = async (req, res) => {
 
     try {
       await createTransaction(stripeId, amount, plan, credits, creatorId);
-      res.status(200).send('Success');
+      res.status(200).send("Success");
     } catch (error) {
-      console.error('Error creating transaction:', error);
-      res.status(500).send('Internal Server Error');
+      console.error("Error creating transaction:", error);
+      res.status(500).send("Internal Server Error");
     }
   } else {
-    res.status(200).send('Received unhandled event');
+    res.status(200).send("Received unhandled event");
   }
-};
+});
 
-app.post('/stripe', bodyParser.raw({ type: 'application/json' }), linkStripeWebhook);
 
+app.use(express.static(join(__dirname, "../FalconEyeAI-Client/public")));
+
+
+app.get('*', (req, res) => {
+  res.sendFile(join(__dirname, "../FalconEyeAI-Client/public", "index.html"));
+});
 
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
+  console.log(`Server is running on port ${port}`);
 });
