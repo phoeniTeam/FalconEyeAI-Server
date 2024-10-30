@@ -55,8 +55,8 @@ const checkoutSession = async (req, res) => {
         plan: plansDetails[plan].id,
       },
       mode: 'payment',
-      success_url: `${process.env.CLIENT_URL}/profile`,
-      cancel_url: `${process.env.CLIENT_URL}/`,
+      success_url: `${process.env.CLIENT_URL}profile`,
+      cancel_url: `${process.env.CLIENT_URL}credit`,
     });
 
     res.json({ id: session.id });
