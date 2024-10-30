@@ -14,6 +14,7 @@ import { createTransaction } from "./controllers/transactionController.js";
 
 const app = express();
 const port = process.env.PORT || 8000; 
+const port = process.env.PORT || 3000;
 app.use(express.json());
 
 
@@ -40,6 +41,7 @@ const checkoutSession = async (req, res) => {
       3: { id: 3, price: 79, name: "Premium", credits: "510" },
     };
     };
+    };
     const amount = Number(plansDetails[plan].price) * 100;
     const session = await stripe.checkout.sessions.create({
       line_items: [
@@ -50,10 +52,14 @@ const checkoutSession = async (req, res) => {
               name: plansDetails[plan].name,
               description: `Credits ${plansDetails[plan].credits}`,
               description: `Credits ${plansDetails[plan].credits}`,
+              description: `Credits ${plansDetails[plan].credits}`,
             },
             unit_amount: amount,
             unit_amount: amount,
+            unit_amount: amount,
           },
+          quantity: 1,
+        },
           quantity: 1,
         },
           quantity: 1,
@@ -62,6 +68,7 @@ const checkoutSession = async (req, res) => {
       metadata: {
         creatorId: req.body.creatorId,
         credits: plansDetails[plan].credits,
+        plan: plansDetails[plan].id,
         plan: plansDetails[plan].id,
         plan: plansDetails[plan].id,
       },
@@ -79,6 +86,24 @@ const checkoutSession = async (req, res) => {
 
 app.post("/create-checkout-session", checkoutSession);
 
+app.post("/create-checkout-session", checkoutSession);
+// app.post('/stripe', (req, res) => {
+//   const event = req.body;
+
+//   switch (event.type) {
+//     case 'payment_intent.succeeded':
+//       console.log('PaymentIntent was successful!');
+//       break;
+//     case 'payment_intent.failed':
+//       console.log('PaymentIntent failed.');
+//       break;
+//     default:
+//       console.log(`Unhandled event type ${event.type}`);
+//   }
+
+//   res.status(200).json({ received: true });
+// });
+
 const linkStripeWebhook = async (req, res) => {
   let event;
   try {
@@ -93,6 +118,7 @@ const linkStripeWebhook = async (req, res) => {
   }
 
   if (event.type === "payment_intent.succeeded") {
+  if (event.type === 'payment_intent.succeeded') {
     const session = event.data.object;
 
     const creatorId = session.metadata.creatorId;
@@ -104,20 +130,20 @@ const linkStripeWebhook = async (req, res) => {
     try {
       await createTransaction(stripeId, amount, plan, credits, creatorId);
       res.status(200).send("Success");
+      res.status(200).send('Success');
     } catch (error) {
       console.error("Error creating transaction:", error);
       res.status(500).send("Internal Server Error");
     }
   } else {
     res.status(200).send("Received unhandled event");
+    res.status(200).send('Received unhandled event');
   }
 };
 
-app.post(
-  "/stripe",
-  bodyParser.raw({ type: "application/json" }),
-  linkStripeWebhook
-);
+app.post('/stripe', bodyParser.raw({ type: 'application/json' }), linkStripeWebhook);
+
+
 
 app.listen(port, () => {
   console.log(`Server is listening on port ${port}`);
