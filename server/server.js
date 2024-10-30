@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
 import { fileURLToPath } from "url";
-import { dirname, join, resolve } from "path";
+import path from "path";
 import connectDB from "./config/database.js";
 import creatorRoutes from "./routes/creatorRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
@@ -11,10 +11,6 @@ import transactionRoutes from "./routes/transactionRoutes.js";
 import Stripe from "stripe";
 import bodyParser from "body-parser";
 import { createTransaction } from "./controllers/transactionController.js";
-
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 dotenv.config();
 const app = express();
@@ -108,12 +104,15 @@ app.post("/stripe", async (req, res) => {
   }
 });
 
-app.use(express.static(resolve(__dirname, "../FalconEyeAI-Client/dist")));
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const distPath = path.resolve(__dirname, "../dist");
+app.use(express.static(distPath));
 
 app.get("*", (req, res) => {
-  res.sendFile(resolve(__dirname, "../FalconEyeAI-Client/dist", "index.html"));
+  res.sendFile(path.join(distPath, "index.html"));
 });
-
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
