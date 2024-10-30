@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
 import { fileURLToPath } from "url";
-import { dirname, join } from "path";  
+import { dirname, join, resolve } from "path";
 import connectDB from "./config/database.js";
 import creatorRoutes from "./routes/creatorRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
@@ -12,7 +12,7 @@ import Stripe from "stripe";
 import bodyParser from "body-parser";
 import { createTransaction } from "./controllers/transactionController.js";
 
-// Define __filename and __dirname for ES modules
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
@@ -20,14 +20,11 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
 
-
 app.use(express.json());
 app.use(cors());
 app.use(bodyParser.raw({ type: "application/json" }));
 
-
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-
 
 connectDB();
 
@@ -36,7 +33,6 @@ app.use("/api/auth", authRoutes);
 app.use("/creators", creatorRoutes);
 app.use("/images", imageRoutes);
 app.use("/transactions", transactionRoutes);
-
 
 app.post("/create-checkout-session", async (req, res) => {
   try {
@@ -78,7 +74,6 @@ app.post("/create-checkout-session", async (req, res) => {
   }
 });
 
-
 app.post("/stripe", async (req, res) => {
   let event;
   try {
@@ -113,14 +108,11 @@ app.post("/stripe", async (req, res) => {
   }
 });
 
+app.use(express.static(resolve(__dirname, "../FalconEyeAI-Client/dist")));
 
-app.use(express.static(join(__dirname, "../FalconEyeAI-Client/dist"))); 
-
-
-app.get('*', (req, res) => {
-  res.sendFile(join(__dirname, "../FalconEyeAI-Client/dist", "index.html")); 
+app.get("*", (req, res) => {
+  res.sendFile(resolve(__dirname, "../FalconEyeAI-Client/dist", "index.html"));
 });
-
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
