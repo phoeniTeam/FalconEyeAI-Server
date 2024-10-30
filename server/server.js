@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
 import { fileURLToPath } from "url";
-import { dirname, join } from "path";  // Import necessary modules
+import { dirname, join } from "path";  
 import connectDB from "./config/database.js";
 import creatorRoutes from "./routes/creatorRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
@@ -114,11 +114,11 @@ app.post("/stripe", async (req, res) => {
 });
 
 
-app.use(express.static(join(__dirname, "../FalconEyeAI-Client/public")));
+app.use(express.static(join(__dirname, "../FalconEyeAI-Client/dist"))); 
 
 
 app.get('*', (req, res) => {
-  res.sendFile(join(__dirname, "../FalconEyeAI-Client/public", "index.html"));
+  res.sendFile(join(__dirname, "../FalconEyeAI-Client/dist", "index.html")); 
 });
 
 
